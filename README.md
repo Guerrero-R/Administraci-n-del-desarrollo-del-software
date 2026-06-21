@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SmartStudy AI - Sprint 1 Mejorado con Gemini
 
 Versión de referencia para implementar el Sprint 1 con las historias de usuario elevadas al siguiente nivel.
@@ -11,6 +12,8 @@ Versión de referencia para implementar el Sprint 1 con las historias de usuario
 | HU-03 | Resumen con IA | Usa Gemini y genera resumen + Post-It notes de estudio |
 | HU-04 | Visualización | Text area legible y descarga del resumen en TXT |
 | HU-05 | Manejo de errores | Mensajes específicos para PDF corrupto, vacío, escaneado, archivo grande o API key faltante |
+| HU-06 | Preguntass de estudio | Genera preguntas basadas en el PDF para conocer comprension |
+| HU-07 | Flashcards Genera tarjetas de estudio con frente y reverso para repaso rápido |
 
 ## Instalación local
 
@@ -51,3 +54,8 @@ OpenAI. (2026). ChatGPT (GPT-5.5 Thinking), utilizado como apoyo para generació
 ## Nota importante
 
 Este ZIP es una referencia técnica. El equipo debe revisar, adaptar, probar y documentar los cambios antes de presentarlos como parte del entregable.
+
+## Repositorio
+
+**Administración del desarrollo del software**  
+ITESM TC4018.10 2026

@@ -13,7 +13,7 @@ MAX_FILE_MB = int(os.getenv("MAX_FILE_MB", "10"))
 
 st.set_page_config(page_title="SmartStudy AI", page_icon="📚", layout="wide")
 
-st.title("📚 SmartStudy AI - Sprint 1")
+st.title("📚 SmartStudy AI - Sprint 2")
 st.caption("MVP con carga de PDF, extraccion de texto, resumen con Gemini y Post-It notes de estudio.")
 
 with st.sidebar:
@@ -103,19 +103,58 @@ if uploaded_file:
         st.markdown("### ✅ Acciones recomendadas")
         for item in output.action_items:
             st.success(item)
+
+        st.subheader("HU-06 - Generación de preguntas de estudio")
+
+        st.markdown("### ❓ Preguntas de estudio")
+        if output.study_questions:
+            for index, question in enumerate(output.study_questions):
+                question_text = question
+                answer_text = ""
+
+                if "Respuesta:" in question:
+                    parts = question.split("Respuesta:", 1)
+                    question_text = parts[0].strip()
+                    answer_text = parts[1].strip()
+
+                with st.container(border=True):
+                    st.markdown(f"**Pregunta {index + 1}:**")
+                    st.write(question_text)
+
+                    if answer_text:
+                        st.markdown("**Respuesta:**")
+                        st.write(answer_text)
+        else:
+            st.warning("No se generaron preguntas de estudio para este documento.")
+
+        st.subheader("HU-07 - Flashcards automáticas")
+
+        st.markdown("### 🧠 Flashcards")
+        if output.flashcards:
+            flashcards_cols = st.columns(2)
+            for index, card in enumerate(output.flashcards):
+                with flashcards_cols[index %2]:
+                    with st.container(border=True):
+                        st.markdown(f"***Flashcard {index +1}**")
+                        st.markdown(f"***Frente:** {card.front}")
+                        st.markdown(f"***Reverso:** {card.back}")
+        else:
+            st.markdown("No se generaron flashcards para este documento.")
 else:
     st.info("Carga un PDF para iniciar el flujo del Sprint 1.")
 
 with st.expander("Trazabilidad Sprint 1: HU a funcionalidad"):
     st.table(
         {
-            "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05"],
+            "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07"],
             "Mejora aplicada": [
                 "Carga PDF con validacion de tamano y metadatos visibles",
                 "Extraccion con metricas, paginas, palabras y vista previa",
                 "Resumen Gemini + Post-It notes + acciones de estudio",
                 "Visualizacion clara, text area y descarga TXT",
                 "Errores especificos para PDF invalido, vacio, corrupto o API no configurada",
+                "Generación de preguntas de estudio basadas en el contenido del PDF",
+                "Generación de flashcards con frente y reverso para repaso rápido",
             ],
             "Archivo principal": [
                 "app.py",
@@ -123,6 +162,8 @@ with st.expander("Trazabilidad Sprint 1: HU a funcionalidad"):
                 "app/gemini_service.py",
                 "app.py",
                 "app.py + app/pdf_processor.py + app/gemini_service.py",
+                "app.py + app/gemini_service.py",
+                "app.py + app/gemini_service.py",
             ],
         }
     )

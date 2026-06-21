@@ -8,11 +8,18 @@ from google.genai import types
 
 
 @dataclass
+class Flashcard:
+    front: str
+    back: str
+
+@dataclass
 class StudyOutput:
     summary: str
     key_ideas: list[str]
     study_notes: list[str]
     action_items: list[str]
+    study_questions: list[str]
+    flashcards: list[Flashcard]
 
 
 class GeminiServiceError(Exception):
@@ -63,12 +70,18 @@ Devuelve exactamente estas claves:
 - key_ideas: array de 4 a 6 strings, cada uno como una idea clave tipo Post-It.
 - study_notes: array de 4 a 6 strings, cada uno como una nota breve de estudio tipo Post-It.
 - action_items: array de 3 a 5 strings, cada uno como recomendacion accionable para el estudiante.
+- study_questions: array de 5 a 8 strings, cada uno como una pregunta de estudio basada en el documento, asi como su respuesra.
+- flashcards: array de 5 a 8 objetos JSON. Cada objeto debe tener estas claves:
+    -front: string con una pregunta, concepto o termino clave.
+    -back: string con la respuesta breve y clara.
 
 Reglas:
 - Escribe en espanol.
 - Prioriza claridad, utilidad academica y fidelidad al documento.
 - No inventes informacion no soportada por el texto.
 - Cada Post-It debe ser breve y facil de leer.
+- Las preguntas de estudio deben evaluar comprension, conceptos importantes, y relaciones entre ideas.
+- Las flashcards deben ser breves, utiles para repaso rapido y fieles al documento.
 
 Texto del documento:
 {source_text}
@@ -100,9 +113,26 @@ Texto del documento:
         raise GeminiServiceError("Gemini no devolvio contenido para este documento.")
 
     data = _safe_json_loads(response.text)
+
+    raw_flashcards = data.get("flashcards",[])
+
+    flashcards = []
+    for item in raw_flashcards:
+        if isinstance(item, dict):
+            front = str(item.get("front", "")).strip()
+            back = str(item.get("back", "")).strip()
+            if front and back:
+                flashcards.append(Flashcard(front=front, back=back))
+
     return StudyOutput(
         summary=str(data.get("summary", "")).strip(),
         key_ideas=[str(item).strip() for item in data.get("key_ideas", []) if str(item).strip()],
         study_notes=[str(item).strip() for item in data.get("study_notes", []) if str(item).strip()],
         action_items=[str(item).strip() for item in data.get("action_items", []) if str(item).strip()],
+        study_questions=[
+            str(item).strip()
+            for item in data.get("study_questions",[])
+            if str(item).strip()
+        ],
+        flashcards=flashcards,
     )
