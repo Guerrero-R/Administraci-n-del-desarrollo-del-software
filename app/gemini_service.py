@@ -12,6 +12,7 @@ class Flashcard:
     front: str
     back: str
 
+
 @dataclass
 class StudyOutput:
     summary: str
@@ -26,13 +27,23 @@ class GeminiServiceError(Exception):
     """Raised when Gemini cannot generate the requested response."""
 
 
-def _get_client() -> genai.Client:
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if not api_key:
+def _mask(api_key: str) -> str:
+    """Enmascara la clave para mensajes de error (nunca exponer completa)."""
+    api_key = (api_key or "").strip()
+    if len(api_key) <= 10:
+        return "NO_KEY" if not api_key else "****"
+    return f"{api_key[:6]}…{api_key[-4:]}"
+
+
+def _get_client(api_key: str | None = None) -> genai.Client:
+    # Prioridad: clave recibida (desde la UI / key_manager) -> variables de entorno.
+    key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not key:
         raise GeminiServiceError(
-            "No se encontro GEMINI_API_KEY. Configura la variable de entorno antes de generar el resumen."
+            "No se encontro GEMINI_API_KEY. Configurala en la barra lateral "
+            "o en tu archivo .env antes de generar el resumen."
         )
-    return genai.Client(api_key=api_key)
+    return genai.Client(api_key=key)
 
 
 def _safe_json_loads(raw_text: str) -> dict[str, Any]:
@@ -51,9 +62,13 @@ def generate_study_output(
     text: str,
     summary_style: str = "academico",
     max_input_chars: int | None = None,
+    api_key: str | None = None,
 ) -> StudyOutput:
-    """Generate summary plus post-it style study notes using Gemini."""
-    client = _get_client()
+    """Generate summary plus post-it style study notes using Gemini.
+
+    api_key: clave a usar. Si es None, se toma de las variables de entorno.
+    """
+    client = _get_client(api_key)
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     limit = max_input_chars or int(os.getenv("MAX_INPUT_CHARS", "18000"))
     source_text = text[:limit]
@@ -97,16 +112,10 @@ Texto del documento:
             ),
         )
     except Exception as exc:
-        api_key = os.getenv("GEMINI_API_KEY", "")
-
-        masked_key = (
-            f"{api_key[:8]}...{api_key[-4:]}"
-            if len(api_key) > 12
-            else "NO_KEY"
-        )
-
+        # Nunca incluimos la API key en el mensaje (solo una pista enmascarada).
+        used_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
         raise GeminiServiceError(
-            f"Error Gemini: {exc} | API Key: {api_key}"
+            f"Error al llamar a Gemini: {exc} (API key usada: {_mask(used_key)})"
         ) from exc
 
     if not response.text:
@@ -114,7 +123,7 @@ Texto del documento:
 
     data = _safe_json_loads(response.text)
 
-    raw_flashcards = data.get("flashcards",[])
+    raw_flashcards = data.get("flashcards", [])
 
     flashcards = []
     for item in raw_flashcards:
@@ -131,7 +140,7 @@ Texto del documento:
         action_items=[str(item).strip() for item in data.get("action_items", []) if str(item).strip()],
         study_questions=[
             str(item).strip()
-            for item in data.get("study_questions",[])
+            for item in data.get("study_questions", [])
             if str(item).strip()
         ],
         flashcards=flashcards,
