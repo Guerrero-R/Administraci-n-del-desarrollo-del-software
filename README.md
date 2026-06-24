@@ -24,11 +24,13 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edita `.env` y agrega tu API key:
+Puedes editar `.env` y agrega tu API key para que la app pueda funcionar correctamente:
 
 ```bash
 GEMINI_API_KEY=tu_api_key
 ```
+
+O igual la interfaz de la aplicación te permite modificarla o agregarla más tarde.
 
 Ejecuta:
 
