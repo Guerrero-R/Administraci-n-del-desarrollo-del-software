@@ -299,7 +299,7 @@ def render_traceability() -> None:
     with st.expander("📌 Trazabilidad Sprint: HU a funcionalidad"):
         st.table(
             {
-                "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07","HU-08","HU-09"],
+                "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07","HU-08","HU-09","HU-10"],
                 "Mejora aplicada": [
                     "Carga PDF con validacion de tamano y metadatos visibles",
                     "Extraccion con metricas, paginas, palabras y vista previa",
@@ -309,7 +309,8 @@ def render_traceability() -> None:
                     "Generacion de preguntas de estudio basadas en el contenido del PDF",
                     "Generacion de flashcards con frente y reverso para repaso rapido",
                     "Exportacion de todos los resultados en formatos TXT y JSON para integraciones o respaldo",
-                    "Mejora en la interfaz de usuario y experiencia del usuario"
+                    "Mejora en la interfaz de usuario y experiencia del usuario",
+                    "Validación tamaño de archivos"
                 ],
                 "Archivo principal": [
                     "app.py + app/ui.py",
@@ -321,6 +322,7 @@ def render_traceability() -> None:
                     "app/ui.py + app/gemini_service.py",
                     "app/ui.py + app/export_utils.py",
                     "(Refactorizado) app.py (Nuevos) app/ui.py + app/assets/css/styles.css + app/assets/html/*.html",
+                    "Dockerfile"
                 ],
             }
         )
