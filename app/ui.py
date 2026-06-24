@@ -20,6 +20,7 @@ import streamlit as st
 from app import key_manager, templates
 from app.gemini_service import GeminiServiceError, generate_study_output
 from app.pdf_processor import PDFProcessingError, extract_text_from_pdf
+from app.export_utils import build_txt_export, build_json_export
 
 # Paletas tipo "papel de colores" para las notas Post-It.
 PALETTE_IDEAS = ["#ffe066", "#ffd43b", "#ffc078", "#ffa94d"]
@@ -210,23 +211,17 @@ def _questions(questions) -> None:
                 st.markdown(f"**Respuesta:** {a_text}")
 
 
-def render_results(output, elapsed: float) -> None:
+def render_results(output, elapsed: float, filename:str = "documento") -> None:
     """HU-03/04/06/07 - Resultados organizados en pestañas (lógica de 3 clicks)."""
     st.success(f"✨ Contenido generado correctamente en {elapsed:.2f} segundos.")
 
-    tab_resumen, tab_ideas, tab_notas, tab_acciones, tab_preguntas, tab_flash = st.tabs(
-        ["📝 Resumen", "🟨 Ideas clave", "🟦 Notas", "✅ Acciones", "❓ Preguntas", "🧠 Flashcards"]
+    tab_resumen, tab_ideas, tab_notas, tab_acciones, tab_preguntas, tab_flash, tab_export = st.tabs(
+        ["📝 Resumen", "🟨 Ideas clave", "🟦 Notas", "✅ Acciones", "❓ Preguntas", "🧠 Flashcards", "⬇️ Exportar"]
     )
 
-    # HU-04 - Visualizacion del resumen + descarga TXT
+    # HU-04 - Visualizacion del resumen
     with tab_resumen:
         st.text_area("Resumen generado", output.summary, height=300)
-        st.download_button(
-            "⬇️ Descargar resumen en TXT",
-            data=output.summary,
-            file_name="resumen_smartstudy_ai.txt",
-            mime="text/plain",
-        )
 
     with tab_ideas:
         _postit_board(output.key_ideas, "IDEA", PALETTE_IDEAS)
@@ -247,13 +242,64 @@ def render_results(output, elapsed: float) -> None:
     with tab_flash:
         _flashcards(output.flashcards)
 
+    # HU-08 - Exportación de resultados
+    with tab_export:
+        st.markdown("### ⬇️ Exportar todos los resultados")
+        st.caption("Descarga el contenido completo generado: resumen, ideas, notas, preguntas y flashcards.")
+
+        base_name = filename.rsplit(".", 1)[0]
+
+        txt_data = build_txt_export(
+            filename=filename,
+            summary=output.summary,
+            key_ideas=output.key_ideas,
+            study_notes=output.study_notes,
+            action_items=output.action_items,
+            study_questions=output.study_questions,
+            flashcards=output.flashcards,
+        )
+
+        json_data = build_json_export(
+            filename=filename,
+            summary=output.summary,
+            key_ideas=output.key_ideas,
+            study_notes=output.study_notes,
+            action_items=output.action_items,
+            study_questions=output.study_questions,
+            flashcards=output.flashcards,
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**📄 Formato TXT**")
+            st.caption("Legible en cualquier editor. Ideal para imprimir o compartir.")
+            st.download_button(
+                label="⬇️ Descargar TXT",
+                data=txt_data,
+                file_name=f"{base_name}_smartstudy.txt",
+                mime="text/plain",
+                use_container_width=True,
+            )
+
+        with col2:
+            st.markdown("**📦 Formato JSON**")
+            st.caption("Estructura organizada con metadatos. Útil para integraciones.")
+            st.download_button(
+                label="⬇️ Descargar JSON",
+                data=json_data,
+                file_name=f"{base_name}_smartstudy.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+
 
 def render_traceability() -> None:
     """Tabla de trazabilidad HU -> funcionalidad."""
     with st.expander("📌 Trazabilidad Sprint: HU a funcionalidad"):
         st.table(
             {
-                "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07"],
+                "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07","HU-08","HU-09"],
                 "Mejora aplicada": [
                     "Carga PDF con validacion de tamano y metadatos visibles",
                     "Extraccion con metricas, paginas, palabras y vista previa",
@@ -262,6 +308,8 @@ def render_traceability() -> None:
                     "Errores especificos para PDF invalido, vacio, corrupto o API no configurada",
                     "Generacion de preguntas de estudio basadas en el contenido del PDF",
                     "Generacion de flashcards con frente y reverso para repaso rapido",
+                    "Exportacion de todos los resultados en formatos TXT y JSON para integraciones o respaldo",
+                    "Mejora en la interfaz de usuario y experiencia del usuario"
                 ],
                 "Archivo principal": [
                     "app.py + app/ui.py",
@@ -271,6 +319,8 @@ def render_traceability() -> None:
                     "app/ui.py + app/pdf_processor.py + app/gemini_service.py",
                     "app/ui.py + app/gemini_service.py",
                     "app/ui.py + app/gemini_service.py",
+                    "app/ui.py + app/export_utils.py",
+                    "app/ui.py + app/assets/css/styles.css + app/assets/html/*.html",
                 ],
             }
         )
@@ -379,7 +429,11 @@ def render_app(max_file_mb: int = 10) -> None:
 
     # Mostramos resultados persistidos
     if "output" in st.session_state:
-        render_results(st.session_state["output"], st.session_state.get("elapsed", 0.0))
+        render_results(
+        st.session_state["output"],
+        st.session_state.get("elapsed", 0.0),
+        filename=uploaded_file.name,
+        )
         active_step = 3
     else:
         active_step = 2
