@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from app.gemini_service import GeminiServiceError, generate_study_output
 from app.pdf_processor import PDFProcessingError, extract_text_from_pdf
+from app.export_utils import build_txt_export, build_json_export
 
 load_dotenv()
 
@@ -140,13 +141,62 @@ if uploaded_file:
                         st.markdown(f"***Reverso:** {card.back}")
         else:
             st.markdown("No se generaron flashcards para este documento.")
+        
+        # ──────────────────────────────────────────────
+        # HU-08 - Exportación de resultados
+        # ──────────────────────────────────────────────
+        st.subheader("HU-08 - Exportación de resultados")
+
+        base_name = uploaded_file.name.rsplit(".", 1)[0]
+
+        txt_data = build_txt_export(
+            filename=uploaded_file.name,
+            summary=output.summary,
+            key_ideas=output.key_ideas,
+            study_notes=output.study_notes,
+            action_items=output.action_items,
+            study_questions=output.study_questions,
+            flashcards=output.flashcards,
+        )
+
+        json_data = build_json_export(
+            filename=uploaded_file.name,
+            summary=output.summary,
+            key_ideas=output.key_ideas,
+            study_notes=output.study_notes,
+            action_items=output.action_items,
+            study_questions=output.study_questions,
+            flashcards=output.flashcards,
+        )
+
+        st.markdown("Descarga todos los resultados en el formato que prefieras:")
+
+        export_col1, export_col2 = st.columns(2)
+
+        with export_col1:
+            st.download_button(
+                label="📄 Descargar como TXT",
+                data=txt_data,
+                file_name=f"{base_name}_smartstudy.txt",
+                mime="text/plain",
+                use_container_width=True,
+            )
+
+        with export_col2:
+            st.download_button(
+                label="📦 Descargar como JSON",
+                data=json_data,
+                file_name=f"{base_name}_smartstudy.json",
+                mime="application/json",
+                use_container_width=True,
+            )
 else:
     st.info("Carga un PDF para iniciar el flujo del Sprint 1.")
 
 with st.expander("Trazabilidad Sprint 1: HU a funcionalidad"):
     st.table(
         {
-            "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07"],
+            "Historia": ["HU-01", "HU-02", "HU-03", "HU-04", "HU-05", "HU-06", "HU-07", "HU-08"],
             "Mejora aplicada": [
                 "Carga PDF con validacion de tamano y metadatos visibles",
                 "Extraccion con metricas, paginas, palabras y vista previa",
@@ -155,6 +205,7 @@ with st.expander("Trazabilidad Sprint 1: HU a funcionalidad"):
                 "Errores especificos para PDF invalido, vacio, corrupto o API no configurada",
                 "Generación de preguntas de estudio basadas en el contenido del PDF",
                 "Generación de flashcards con frente y reverso para repaso rápido",
+                "Exportación de resultados en TXT y JSON con todo el contenido generado"
             ],
             "Archivo principal": [
                 "app.py",
@@ -164,6 +215,7 @@ with st.expander("Trazabilidad Sprint 1: HU a funcionalidad"):
                 "app.py + app/pdf_processor.py + app/gemini_service.py",
                 "app.py + app/gemini_service.py",
                 "app.py + app/gemini_service.py",
+                "app.py + app/export_utils.py",
             ],
         }
     )
