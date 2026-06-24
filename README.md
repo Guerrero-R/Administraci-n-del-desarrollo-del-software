@@ -14,6 +14,8 @@ Versión de referencia para implementar el Sprint 1 con las historias de usuario
 | HU-05 | Manejo de errores | Mensajes específicos para PDF corrupto, vacío, escaneado, archivo grande o API key faltante |
 | HU-06 | Preguntass de estudio | Genera preguntas basadas en el PDF para conocer comprension |
 | HU-07 | Flashcards Genera tarjetas de estudio con frente y reverso para repaso rápido |
+| HU-08 | Exportación de resultados | Generar documento con resultados en formato txt o Json |
+| HU-09 | Interfaz de usuario | Mejora en la visualización para el usuario |
 
 ## Instalación local
 
