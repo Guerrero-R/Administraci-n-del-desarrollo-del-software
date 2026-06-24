@@ -320,7 +320,7 @@ def render_traceability() -> None:
                     "app/ui.py + app/gemini_service.py",
                     "app/ui.py + app/gemini_service.py",
                     "app/ui.py + app/export_utils.py",
-                    "app/ui.py + app/assets/css/styles.css + app/assets/html/*.html",
+                    "(Refactorizado) app.py (Nuevos) app/ui.py + app/assets/css/styles.css + app/assets/html/*.html",
                 ],
             }
         )

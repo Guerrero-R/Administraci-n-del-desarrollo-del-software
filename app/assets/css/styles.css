@@ -1,14 +1,6 @@
 /* =====================================================================
    SmartStudy AI - hoja de estilos
    Se carga desde app/ui.py mediante templates.load_css().
-
-   Lineamientos (Web Interface Guidelines) aplicados:
-   - Respeta prefers-reduced-motion (animaciones desactivables).
-   - Animaciones solo con transform/opacity (compositor-friendly).
-   - Sin "transition: all": cada propiedad se lista explicitamente.
-   - Foco visible con :focus-visible; flip tambien por teclado (:focus-within).
-   - Numeros tabulares en metricas; text-wrap: balance en titulos.
-   - Contenido largo: overflow-wrap/word-break en notas y flashcards.
    ===================================================================== */
 
 /* ---- Animaciones base (transform/opacity) ---- */
